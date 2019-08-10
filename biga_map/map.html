@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>ODA</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
+
+<div id='map'></div>
+
+<script>
+
+L.mapbox.accessToken = 'pk.eyJ1IjoiZW5qYWxvdCIsImEiOiIzOTJmMjBiZmI2NGQ2ZjAzODhiMzhiOGI2MTI1YTk4YSJ9.sIOXXU3TPp5dLg_L3cUxhQ';
+
+var map = L.mapbox.map('map', 'mapbox.satellite').setView([40, 27], 10);
+
+// Polygon Style http://leafletjs.com/reference.html#geojson-style
+var odastyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#ff0', fillOpacity: 0.3, weight: 0, };
+    }
+});
+var mpstyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#0f0', fillOpacity: 0.3, weight: 0, };
+    }
+});
+var landusestyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#f00', fillOpacity: 0.9, weight: 0, };
+    }
+});
+var waterwaystyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#00f', fillOpacity: 0.6, weight: 3, };
+    }
+});
+
+ // Önemli Doğa Alanları
+var odaLayer = omnivore.geojson('oda.geojson', null, odastyle)
+    .on('ready', function() {
+        //setView geojson dosyaya göre ayarlansın
+        //map.fitBounds(odaLayer.getBounds());
+        odaLayer.eachLayer(function(layer) {
+            layer.bindPopup(layer.feature.properties.Name + '<br/>' + layer.feature.properties.description);
+        });
+    })
+.addTo(map);
+
+ // Milli Parklar
+var mpLayer = omnivore.geojson('mp.geojson', null, mpstyle)
+    .on('ready', function() {
+        //setView geojson dosyaya göre ayarlansın
+        //map.fitBounds(mpLayer.getBounds());
+        mpLayer.eachLayer(function(layer) {
+            layer.bindPopup(layer.feature.properties.Name);
+        });
+    })
+.addTo(map);
+
+ // OSM biga_landuse_quarry
+ var landuseLayer = omnivore.geojson('biga_landuse_quarry.geojson', null, landusestyle)
+    .on('ready', function() {
+        landuseLayer.eachLayer(function(layer) {
+            layer.bindPopup(layer.feature.properties.name);
+        });
+    })
+.addTo(map);
+
+ // OSM biga_waterway_river_stream
+ var waterwayLayer = omnivore.geojson('biga_waterway_river_stream.geojson', null, waterwaystyle)
+    .on('ready', function() {
+        waterwayLayer.eachLayer(function(layer) {
+            layer.bindPopup(layer.feature.properties.name);
+        });
+    })
+.addTo(map);
+
+ // Alamos Gold
+ var alamosLayer = omnivore.geojson('alamos.geojson', null)
+    .on('ready', function() {
+        this.eachLayer(function(marker) {
+                marker.setIcon(L.mapbox.marker.icon({
+                    'marker-color': '#f00',
+                    'marker-size': 'large'
+                }));
+            marker.bindPopup(marker.toGeoJSON().properties.name + '<br/>' + marker.toGeoJSON().properties.description);
+        });
+    })
+.addTo(map);
+
+ // Layer Control
+ L.control.layers({
+    'Satellite': L.mapbox.styleLayer('mapbox://styles/mapbox/satellite'),
+    'Street': L.mapbox.styleLayer('mapbox://styles/mapbox/streets-v11')
+}, {
+    'Milli Parklar': mpLayer,
+    'Önemli Doğa Alanları': odaLayer,
+    'Biga Yarımadası Akarsular': waterwayLayer,
+    'Biga Yarımadası Ocaklar': landuseLayer,
+    'Alamos Gold': alamosLayer
+})
+.addTo(map);
+
+</script>
+</body>
+</html>
