@@ -43,6 +43,11 @@ var waterwaystyle = L.geoJson(null, {
         return { color: '#00f', fillOpacity: 0.6, weight: 3, };
     }
 });
+var faystyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#000', fillOpacity: 0.6, weight: 3, };
+    }
+});
 
  // Önemli Doğa Alanları
 var odaLayer = omnivore.geojson('oda.geojson', null, odastyle)
@@ -84,6 +89,10 @@ var mpLayer = omnivore.geojson('mp.geojson', null, mpstyle)
     })
 .addTo(map);
 
+ // MTA Türkiye Diri Fay Haritası 2012
+ var fayLayer = omnivore.geojson('fay.geojson', null, faystyle)
+.addTo(map);
+
  // Alamos Gold
  var alamosLayer = omnivore.geojson('alamos.geojson', null)
     .on('ready', function() {
@@ -104,6 +113,7 @@ var mpLayer = omnivore.geojson('mp.geojson', null, mpstyle)
 }, {
     'Milli Parklar': mpLayer,
     'Önemli Doğa Alanları': odaLayer,
+    'Diri Fay Haritası': fayLayer,
     'Biga Yarımadası Akarsular': waterwayLayer,
     'Biga Yarımadası Ocaklar': landuseLayer,
     'Alamos Gold': alamosLayer
