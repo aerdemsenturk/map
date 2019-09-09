@@ -55,7 +55,7 @@ var odaLayer = omnivore.geojson('oda.geojson', null, odastyle)
         //setView geojson dosyaya göre ayarlansın
         //map.fitBounds(odaLayer.getBounds());
         odaLayer.eachLayer(function(layer) {
-            layer.bindPopup(layer.feature.properties.Name + '<br/>' + layer.feature.properties.description);
+            layer.bindPopup(layer.feature.properties.name + '<br/>' + layer.feature.properties.description);
         });
     })
 .addTo(map);
@@ -66,7 +66,7 @@ var mpLayer = omnivore.geojson('mp.geojson', null, mpstyle)
         //setView geojson dosyaya göre ayarlansın
         //map.fitBounds(mpLayer.getBounds());
         mpLayer.eachLayer(function(layer) {
-            layer.bindPopup(layer.feature.properties.Name);
+            layer.bindPopup(layer.feature.properties.name);
         });
     })
 .addTo(map);
