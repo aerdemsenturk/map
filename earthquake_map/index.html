@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Deprem Haritası</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
+
+<div id='map'></div>
+
+<script>
+L.mapbox.accessToken = 'pk.eyJ1IjoiYmlydGFraW1zZXlsZXIiLCJhIjoiY2s1dmJ0M21nMDBjZzNtbWtzZ2V2MTg3dCJ9.qK6w5NuXrabrKhKUgvbFfg';
+
+
+var options = {
+  maxZoom: 13,
+  minZoom: 3,
+};
+
+var map = L.mapbox.map('map', 'mapbox.satellite', options).setView([39, 35], 5);
+
+var layers = {
+      Streets: L.mapbox.styleLayer('mapbox://styles/mapbox/streets-v11'),
+      Light: L.mapbox.styleLayer('mapbox://styles/mapbox/light-v10'),
+      Satellite: L.mapbox.styleLayer('mapbox://styles/mapbox/satellite-v9')
+  };
+layers.Satellite.addTo(map);
+
+// STYLE
+var faystyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#000', fillOpacity: 0.6, weight: 3, };
+    }
+});
+
+var platestyle = L.geoJson(null, {
+    style: function(feature) {
+        return { color: '#FFF', fillOpacity: 0.9, weight: 2, };
+    }
+});
+
+ // MTA Türkiye Diri Fay Haritası 2012
+var fay = omnivore.geojson('fay.geojson', null, faystyle)
+.addTo(map);
+
+var plates = omnivore.kml('tectonic_plates.kml', null, platestyle)
+.on('ready', function() {
+        map.fitBounds(plates.getBounds());
+        plates.eachLayer(function(layer) {
+            if (layer instanceof L.Marker) {
+                layer.setIcon(L.mapbox.marker.icon({
+                    'marker-color': '#CCC',
+                    'marker-size': 'small'
+                }));
+            }
+            layer.bindPopup(layer.feature.properties.name);
+        });
+    })
+.addTo(map);
+
+ // USGS Weekly Feed
+var earthquakes = omnivore.kml('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_week_depth.kml')
+ .on('ready', function() {
+        map.fitBounds(earthquakes.getBounds());
+        earthquakes.eachLayer(function(layer) {
+            if (layer instanceof L.Marker) {
+                layer.setIcon(L.mapbox.marker.icon({
+                    'marker-color': '#f00',
+                    'marker-size': 'small'
+                }));
+            }
+            layer.bindPopup(layer.feature.properties.description);
+        });
+    })
+.addTo(map);
+
+// Layer Control
+L.control.layers(
+layers, 
+{
+    'Anadolu Diri Fay Haritası': fay,
+    'Haftalık Güncel Depremler': earthquakes,
+    'Tektonik Plakalar': plates
+})
+.addTo(map);
+
+</script>
+
+</body>
+</html>
+
