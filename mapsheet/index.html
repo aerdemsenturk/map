@@ -146,11 +146,8 @@
                 coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
               }
 
-              //set popup text
-              //You can adjust the values of the popup to match the headers of your CSV.
-              // For example: e.features[0].properties.Name is retrieving information from the field Name in the original CSV.
               var description = `<h3>` + e.features[0].properties.Name + `</h3><br />` 
-                                + `<h4><span><a href="https://maps.google.com/maps/dir/?api=1&destination='${coordinates[1]}','${coordinates[0]}'" target="_blank">Yol tarifi</a></span></h4>`
+                                + `<h4><span><a href="https://maps.google.com/maps/dir/?api=1&destination=${coordinates[1]},${coordinates[0]}" target="_blank">Yol tarifi</a></span></h4>`
                                 + `<h4><b>Address:</b>` + e.features[0].properties.Address + `</h4>` 
                                 + `<h4><b>Description:</b>` + e.features[0].properties.description + `</h4>`;
 
