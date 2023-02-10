@@ -35,6 +35,12 @@
             width: 100%;
         }
 
+        .modal-left {
+            max-width: calc(25vw - 1.5rem) !important;
+            margin: 0 auto 0 0;
+        }
+
+
     </style>
 
 
@@ -43,22 +49,22 @@
 <body>
 
         <!--  Modal -->
-    <div class="modal fade" id="placeDetailModal" tabindex="-1" aria-labelledby="placeModal" aria-hidden="true">
-        <div class="modal-dialog modal-place-w50">
+    <div class="modal fade" id="caseDetailModal" tabindex="-1" aria-labelledby="caseModal" aria-hidden="true">
+        <div class="modal-dialog modal-left p-2">
             <div class="modal-content">
 
-                <!-- <div class="figure-thumb bg-primary rounded-top" id="featured-image-place" style="min-height:40vh;background-size:cover;background-position:center;background-image:url();"></div> -->
+                <!-- <div class="figure-thumb bg-primary rounded-top" id="featured-image-case" style="min-height:40vh;background-size:cover;background-position:center;background-image:url();"></div> -->
                 <div class="modal-body">
 
                    
-                        <div id="placeChannel"></div>
-                        <div id="placeCultureNames"></div>
-                        <div id="placeExtraParameters"></div>
-                        <div id="placeFormattedAddress"></div>
-                        <div id="placeFullText"></div>
-                        <div id="placeID"></div>
-                        <div id="placeIsResolved"></div>
-                        <div id="placeTimestamp"></div>
+                        <div id="caseCoordinate"></div>
+                        <div id="caseChannel"></div>
+                        <div id="caseExtraParameters"></div>
+                        <div id="caseFormattedAddress"></div>
+                        <div id="caseFullText"></div>
+                        <div id="caseID"></div>
+                        <div id="caseIsResolved"></div>
+                        <div id="caseTimestamp"></div>
                    
 
                 </div>
@@ -91,14 +97,6 @@
 
     <script>
 
-
-
-
-        // Create a popup, but don't add it to the map yet.
-        const popup = new maplibregl.Popup({
-            closeButton: false
-        });
-
         fetch('https://apigo.afetharita.com/feeds/areas?ne_lat=43.305749407523415&ne_lng=47.71048062898039&sw_lat=32.386240539328554&sw_lng=24.00099690628496')
             .then((response) => response.json())
             .then((data) => {
@@ -127,28 +125,21 @@
 
                     console.log(geojson);
 
-
-                                        //var geojson = [];
-                    // data.results.forEach(function(d) {
-                    //     geojson.push(JSON.parse('{"type": "Feature", "geometry": {"type": "Point", "coordinates": ['+d.loc[0]+','+ d.loc[1]+']}}'));
-                    
-                    // });
-
                     map.on('load', function () {
 
-                        map.addSource('place', {
+                        map.addSource('case', {
                             type: 'geojson',
                             data: geojson
                         });
 
                         map.addLayer({
-                            'id': 'place',
+                            'id': 'case',
                             'type': 'circle',
-                            'source': 'place',
+                            'source': 'case',
                             'minzoom': 7,
                             'paint': {
                                 // Size circle radius by earthquake magnitude and zoom level
-                                'circle-radius': 7,
+                                'circle-radius': 9,
                                 // Color circle by earthquake magnitude
                                 'circle-color': '#000000',
                                 'circle-stroke-color': 'white',
@@ -163,9 +154,9 @@
                         });
 
                         map.addLayer({
-                            'id': 'placeheat',
+                            'id': 'caseheat',
                             'type': 'heatmap',
-                            'source': 'place',
+                            'source': 'case',
                             'maxzoom': 15,
                             'paint': {
                                 // Increase the heatmap weight based on frequency and property magnitude
@@ -219,9 +210,9 @@
 
                         //Hover
                         map.addLayer({
-                            'id': 'ah_placehover',
+                            'id': 'ah_casehover',
                             'type': 'circle',
-                            'source': 'place',     
+                            'source': 'case',     
                             'paint': {
                                 // 'circle-radius': {'base': 2,'stops': [[10, 10], [15, 50], [22, 100]]},
                                 'circle-radius': 25,
@@ -233,9 +224,9 @@
                             'filter': ['==', 'id', '']
                         });
 
-                        // When a click event occurs on a feature in the places layer, open a popup at the
+                        // When a click event occurs on a feature in the cases layer, open a popup at the
                         // location of the feature, with description HTML from its properties.
-                        map.on('click', 'place', function (e) {
+                        map.on('click', 'case', function (e) {
 
          
                             const coordinates = e.features[0].geometry.coordinates.slice();
@@ -254,7 +245,7 @@
 
                             const id = JSON.parse(e.features[0].properties.id);
 
-                            description = '<a id="modal" onclick="placeModalFunction(\'' + id + '\')" >' + id + '</a>';
+                            description = '<a id="modal" onclick="caseModalFunction(\'' + id + '\', \'' + coordinates + '\')" >' + id + '</a>';
                             
                             new maplibregl.Popup()
                                 .setLngLat(coordinates)
@@ -265,14 +256,14 @@
 
                         });
 
-                        map.on('mouseenter', 'place', function(e) {
+                        map.on('mouseenter', 'case', function(e) {
                             map.getCanvas().style.cursor = 'pointer';
-                            map.setFilter("ah_placehover", ["==", "id", e.features[0].properties.id]);
+                            map.setFilter("ah_casehover", ["==", "id", e.features[0].properties.id]);
                         });
 
-                        map.on('mouseleave', 'place', function(e) {
+                        map.on('mouseleave', 'case', function(e) {
                             map.getCanvas().style.cursor = '';
-                            map.setFilter("ah_placehover", ["==", "id", ""]);
+                            map.setFilter("ah_casehover", ["==", "id", ""]);
 
                         });
 
@@ -281,27 +272,29 @@
 
                     //Hide loading bar once tiles from geojson are loaded
                     map.on('data', function (e) {
-                        if (e.dataType === 'source' && e.sourceId === 'place') {
+                        if (e.dataType === 'source' && e.sourceId === 'case') {
                             document.getElementById("loader").style.visibility = "hidden";
                         }
                     })
 
-
-
+                    // Add geolocate control to the map.
+                    map.addControl(
+                        new maplibregl.GeolocateControl({
+                        positionOptions: {
+                        enableHighAccuracy: true
+                        },
+                        trackUserLocation: true
+                        })
+                    );
 
             } );
 
 
-
-
-
-        let modalPlace = new bootstrap.Modal(document.getElementById('placeDetailModal'), {
+        let modalcase = new bootstrap.Modal(document.getElementById('caseDetailModal'), {
             keyboard: false,
             //backdrop: false,
         });
         
-        const url = 'map.geojson';
-
         const map = new maplibregl.Map({
             container: 'map',
             style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
@@ -310,37 +303,45 @@
             zoom: 7
         });
 
+        const popup = new maplibregl.Popup({
+            closeButton: false
+        });
 
-        function placeModalFunction(e) {
+        function caseModalFunction(e, c) {
 
-            modalPlace.toggle();
+            modalcase.toggle();
 
             fetch('https://apigo.afetharita.com/feeds/' + e )
             .then((response) => response.json())
             .then((data) => {  
 
                 console.log(data);
+                console.log(c);
 
-                let placeChannel = `<p class="small">${data.channel}</p>`;
-                let placeExtraParameters = `<p class="small">${data.extra_parameters}</p>`;
-                let placeFullText = `<p class="small">${data.full_text}</p>`;
+                let caseCoordinate = `<p class="small">${c}</p>`;
+                let caseChannel = `<p class="small">${data.channel}</p>`;
+                let caseExtraParameters = `<p class="small">${data.extra_parameters}</p>`;
+                let caseFullText = `<p class="small">${data.full_text}</p>`;
+                let caseID = `<p class="small">${data.id}</p>`;
+                let casetimestamp = `<p class="small">${data.timestamp}</p>`;
 
-                let getElementChannel = document.getElementById('placeChannel');
-                let getElementExtraParameters = document.getElementById('placeExtraParameters');
-                let getElementFullText = document.getElementById('placeFullText');
+                let getElementCoordinate = document.getElementById('caseCoordinate');
+                let getElementChannel = document.getElementById('caseChannel');
+                let getElementExtraParameters = document.getElementById('caseExtraParameters');
+                let getElementFullText = document.getElementById('caseFullText');
+                let getElementID = document.getElementById('caseID');
+                let getElementTimestamp = document.getElementById('caseTimestamp');
 
-
-                getElementChannel.innerHTML = placeChannel;
-                getElementExtraParameters.innerHTML = placeExtraParameters;
-                getElementFullText.innerHTML = placeFullText;
-
+                getElementCoordinate.innerHTML = caseCoordinate;
+                getElementChannel.innerHTML = caseChannel;
+                getElementExtraParameters.innerHTML = caseExtraParameters;
+                getElementFullText.innerHTML = caseFullText;
+                getElementID.innerHTML = caseID;
+                getElementTimestamp.innerHTML = casetimestamp;
 
             } );
 
-            
         };
-
-
 
     </script>
 
