@@ -7,12 +7,23 @@
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 
     <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
-    <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />    
+    <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
+        integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous">
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+
+    <!-- Load the `maplibre-gl-geocoder` plugin. -->
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.2.0/dist/maplibre-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.2.0/dist/maplibre-gl-geocoder.css"
+        type="text/css" />
+
     <style>
         body {
             margin: 0;
@@ -39,8 +50,6 @@
             max-width: calc(25vw - 1.5rem) !important;
             margin: 0 auto 0 0;
         }
-
-
     </style>
 
 
@@ -48,7 +57,7 @@
 
 <body>
 
-        <!--  Modal -->
+    <!--  Modal -->
     <div class="modal fade" id="caseDetailModal" tabindex="-1" aria-labelledby="caseModal" aria-hidden="true">
         <div class="modal-dialog modal-left p-2">
             <div class="modal-content">
@@ -56,16 +65,16 @@
                 <!-- <div class="figure-thumb bg-primary rounded-top" id="featured-image-case" style="min-height:40vh;background-size:cover;background-position:center;background-image:url();"></div> -->
                 <div class="modal-body">
 
-                   
-                        <div id="caseCoordinate"></div>
-                        <div id="caseChannel"></div>
-                        <div id="caseExtraParameters"></div>
-                        <div id="caseFormattedAddress"></div>
-                        <div id="caseFullText"></div>
-                        <div id="caseID"></div>
-                        <div id="caseIsResolved"></div>
-                        <div id="caseTimestamp"></div>
-                   
+
+                    <div id="caseCoordinate"></div>
+                    <div id="caseChannel"></div>
+                    <div id="caseExtraParameters"></div>
+                    <div id="caseFormattedAddress"></div>
+                    <div id="caseFullText"></div>
+                    <div id="caseID"></div>
+                    <div id="caseIsResolved"></div>
+                    <div id="caseTimestamp"></div>
+
 
                 </div>
 
@@ -73,7 +82,7 @@
         </div>
     </div>
 
-    
+
     <div class="flex-container">
         <div id="map">
         </div>
@@ -96,15 +105,16 @@
     </div>
 
     <script>
-
-        fetch('https://apigo.afetharita.com/feeds/areas?ne_lat=43.305749407523415&ne_lng=47.71048062898039&sw_lat=32.386240539328554&sw_lng=24.00099690628496')
+        fetch(
+                'https://apigo.afetharita.com/feeds/areas?ne_lat=43.305749407523415&ne_lng=47.71048062898039&sw_lat=32.386240539328554&sw_lng=24.00099690628496'
+            )
             .then((response) => response.json())
             .then((data) => {
 
-                    console.log(data.results);
-            
-                    // to GeoJSON.Point array
-                    const geoJSONPointArr = data.results.map(d => {
+                console.log(data.results);
+
+                // to GeoJSON.Point array
+                const geoJSONPointArr = data.results.map(d => {
                     return {
                         "type": "Feature",
                         "geometry": {
@@ -115,186 +125,237 @@
                             "id": d.entry_id
                         }
                     }
+                });
+
+                // to GeoJSON.FeatureCollection
+                const geojson = {
+                    "type": "FeatureCollection",
+                    "features": geoJSONPointArr
+                }
+
+                console.log(geojson);
+
+                map.on('load', function () {
+
+                    map.addSource('case', {
+                        type: 'geojson',
+                        data: geojson
                     });
 
-                    // to GeoJSON.FeatureCollection
-                    const geojson = {
-                        "type": "FeatureCollection",
-                        "features": geoJSONPointArr
-                    }
-
-                    console.log(geojson);
-
-                    map.on('load', function () {
-
-                        map.addSource('case', {
-                            type: 'geojson',
-                            data: geojson
-                        });
-
-                        map.addLayer({
-                            'id': 'case',
-                            'type': 'circle',
-                            'source': 'case',
-                            'minzoom': 7,
-                            'paint': {
-                                // Size circle radius by earthquake magnitude and zoom level
-                                'circle-radius': 9,
-                                // Color circle by earthquake magnitude
-                                'circle-color': '#000000',
-                                'circle-stroke-color': 'white',
-                                'circle-stroke-width': 1,
-                                // Transition from heatmap to circle layer by zoom level
-                                'circle-opacity': 1
-                            },
-                            'layout': {
+                    map.addLayer({
+                        'id': 'case',
+                        'type': 'circle',
+                        'source': 'case',
+                        'minzoom': 12,
+                        'paint': {
+                            // Size circle radius by earthquake magnitude and zoom level
+                            'circle-radius': 9,
+                            // Color circle by earthquake magnitude
+                            'circle-color': '#000000',
+                            'circle-stroke-color': 'white',
+                            'circle-stroke-width': 1,
+                            // Transition from heatmap to circle layer by zoom level
+                            'circle-opacity': 1
+                        },
+                        'layout': {
                             // Make the layer visible by default.
                             'visibility': 'visible',
-                            }
+                        }
+                    });
+
+                    map.addLayer({
+                        'id': 'caseheat',
+                        'type': 'heatmap',
+                        'source': 'case',
+                        'maxzoom': 18,
+                        'paint': {
+                            // Increase the heatmap weight based on frequency and property magnitude
+                            'heatmap-weight': 0.05,
+                            // Increase the heatmap color weight weight by zoom level
+                            // heatmap-intensity is a multiplier on top of heatmap-weight
+                            'heatmap-intensity': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                0,
+                                1,
+                                14,
+                                3
+                            ],
+                            // // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                            // // Begin color ramp at 0-stop with a 0-transparancy color
+                            // // to create a blur-like effect.
+                            // 'heatmap-color': [
+                            //     'interpolate',
+                            //     ['linear'],
+                            //     ['heatmap-density'],
+                            //     0, 'rgba(237,252,27,0)',
+                            //     0.2, 'rgb(246,216,169)',
+                            //     0.4, 'rgb(215,77,80)',
+                            //     0.6, 'rgb(120,0,148)',
+                            //     0.8, 'rgb(73,1,251)'
+                            // ],
+                            // Adjust the heatmap radius by zoom level
+                            'heatmap-radius': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                0,
+                                2,
+                                18,
+                                20
+                            ],
+                            // Transition from heatmap to circle layer by zoom level
+                            'heatmap-opacity': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                1,
+                                2,
+                                20,
+                                1
+                            ]
+                        }
+                    });
+
+                    //Hover
+                    map.addLayer({
+                        'id': 'ah_casehover',
+                        'type': 'circle',
+                        'source': 'case',
+                        'paint': {
+                            // 'circle-radius': {'base': 2,'stops': [[10, 10], [15, 50], [22, 100]]},
+                            'circle-radius': 25,
+                            'circle-opacity': 0.5,
+                            'circle-pitch-alignment': 'map',
+                            'circle-pitch-scale': 'map',
+                            'circle-color': 'black'
+                        },
+                        'filter': ['==', 'id', '']
+                    });
+
+                    // When a click event occurs on a feature in the cases layer, open a popup at the
+                    // location of the feature, with description HTML from its properties.
+                    map.on('click', 'case', function (e) {
+
+
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+                        //const description = '<a class="link" href="#">' + e.features[0].properties.formatted_address + '</a>';
+
+                        // while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        //     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                        // }
+
+                        map.flyTo({
+                            center: coordinates,
+                            //zoom: 14,
+                            speed: 0.2,
+                            curve: 1,
                         });
 
-                        map.addLayer({
-                            'id': 'caseheat',
-                            'type': 'heatmap',
-                            'source': 'case',
-                            'maxzoom': 15,
-                            'paint': {
-                                // Increase the heatmap weight based on frequency and property magnitude
-                                'heatmap-weight': 1,
-                                // Increase the heatmap color weight weight by zoom level
-                                // heatmap-intensity is a multiplier on top of heatmap-weight
-                                'heatmap-intensity': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    0,
-                                    1,
-                                    10,
-                                    3
-                                ],
-                                // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-                                // Begin color ramp at 0-stop with a 0-transparancy color
-                                // to create a blur-like effect.
-                                'heatmap-color': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['heatmap-density'],
-                                    0, 'rgba(237,252,27,0)',
-                                    0.2, 'rgb(246,216,169)',
-                                    0.4, 'rgb(215,77,80)',
-                                    0.6, 'rgb(120,0,148)',
-                                    0.8, 'rgb(73,1,251)'
-                                ],
-                                // Adjust the heatmap radius by zoom level
-                                'heatmap-radius': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    0,
-                                    2,
-                                    10,
-                                    20
-                                ],
-                                // Transition from heatmap to circle layer by zoom level
-                                'heatmap-opacity': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    7,
-                                    1,
-                                    10,
-                                    0
-                                ]
-                            }
-                        });
+                        const id = JSON.parse(e.features[0].properties.id);
 
-                        //Hover
-                        map.addLayer({
-                            'id': 'ah_casehover',
-                            'type': 'circle',
-                            'source': 'case',     
-                            'paint': {
-                                // 'circle-radius': {'base': 2,'stops': [[10, 10], [15, 50], [22, 100]]},
-                                'circle-radius': 25,
-                                'circle-opacity': 0.5,
-                                'circle-pitch-alignment': 'map',
-                                'circle-pitch-scale': 'map',
-                                'circle-color': 'black'
-                            },
-                            'filter': ['==', 'id', '']
-                        });
+                        description = '<a id="modal" onclick="caseModalFunction(\'' + id +
+                            '\', \'' + coordinates + '\')" >' + id + '</a>';
 
-                        // When a click event occurs on a feature in the cases layer, open a popup at the
-                        // location of the feature, with description HTML from its properties.
-                        map.on('click', 'case', function (e) {
+                        new maplibregl.Popup()
+                            .setLngLat(coordinates)
+                            .setHTML(description)
+                            .addTo(map);
 
-         
-                            const coordinates = e.features[0].geometry.coordinates.slice();
-                            //const description = '<a class="link" href="#">' + e.features[0].properties.formatted_address + '</a>';
-
-                            // while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                            //     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                            // }
-
-                            map.flyTo({
-                                center: coordinates,
-                                //zoom: 14,
-                                speed: 0.2,
-                                curve: 1,
-                            });
-
-                            const id = JSON.parse(e.features[0].properties.id);
-
-                            description = '<a id="modal" onclick="caseModalFunction(\'' + id + '\', \'' + coordinates + '\')" >' + id + '</a>';
-                            
-                            new maplibregl.Popup()
-                                .setLngLat(coordinates)
-                                .setHTML(description)
-                                .addTo(map);
-                            
-                            document.getElementById('modal').click();
-
-                        });
-
-                        map.on('mouseenter', 'case', function(e) {
-                            map.getCanvas().style.cursor = 'pointer';
-                            map.setFilter("ah_casehover", ["==", "id", e.features[0].properties.id]);
-                        });
-
-                        map.on('mouseleave', 'case', function(e) {
-                            map.getCanvas().style.cursor = '';
-                            map.setFilter("ah_casehover", ["==", "id", ""]);
-
-                        });
+                        document.getElementById('modal').click();
 
                     });
 
+                    map.on('mouseenter', 'case', function (e) {
+                        map.getCanvas().style.cursor = 'pointer';
+                        map.setFilter("ah_casehover", ["==", "id", e.features[0].properties.id]);
+                    });
 
-                    //Hide loading bar once tiles from geojson are loaded
-                    map.on('data', function (e) {
-                        if (e.dataType === 'source' && e.sourceId === 'case') {
-                            document.getElementById("loader").style.visibility = "hidden";
-                        }
-                    })
+                    map.on('mouseleave', 'case', function (e) {
+                        map.getCanvas().style.cursor = '';
+                        map.setFilter("ah_casehover", ["==", "id", ""]);
 
-                    // Add geolocate control to the map.
-                    map.addControl(
-                        new maplibregl.GeolocateControl({
+                    });
+
+                });
+
+
+                //Hide loading bar once tiles from geojson are loaded
+                map.on('data', function (e) {
+                    if (e.dataType === 'source' && e.sourceId === 'case') {
+                        document.getElementById("loader").style.visibility = "hidden";
+                    }
+                })
+
+                // Add geolocate control to the map.
+                map.addControl(
+                    new maplibregl.GeolocateControl({
                         positionOptions: {
-                        enableHighAccuracy: true
+                            enableHighAccuracy: true
                         },
                         trackUserLocation: true
-                        })
-                    );
+                    }), 'bottom-right'
+                );
 
-            } );
+                // Add a navigation control to the bottom right.
+                map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+
+                var geocoder_api = {
+                    forwardGeocode: async (config) => {
+                        const features = [];
+                        try {
+                            let request =
+                                'https://nominatim.openstreetmap.org/search?q=' +
+                                config.query +
+                                '&format=geojson&polygon_geojson=1&addressdetails=1';
+                            const response = await fetch(request);
+                            const geojson = await response.json();
+                            for (let feature of geojson.features) {
+                                let center = [
+                                    feature.bbox[0] +
+                                    (feature.bbox[2] - feature.bbox[0]) / 2,
+                                    feature.bbox[1] +
+                                    (feature.bbox[3] - feature.bbox[1]) / 2
+                                ];
+                                let point = {
+                                    type: 'Feature',
+                                    geometry: {
+                                        type: 'Point',
+                                        coordinates: center
+                                    },
+                                    place_name: feature.properties.display_name,
+                                    properties: feature.properties,
+                                    text: feature.properties.display_name,
+                                    place_type: ['place'],
+                                    center: center
+                                };
+                                features.push(point);
+                            }
+                        } catch (e) {
+                            console.error(`Failed to forwardGeocode with error: ${e}`);
+                        }
+
+                        return {
+                            features: features
+                        };
+                    }
+                };
+                map.addControl(
+                    new MaplibreGeocoder(geocoder_api, {
+                        maplibregl: maplibregl
+                    })
+                );
+
+            });
 
 
         let modalcase = new bootstrap.Modal(document.getElementById('caseDetailModal'), {
             keyboard: false,
             //backdrop: false,
         });
-        
+
         const map = new maplibregl.Map({
             container: 'map',
             style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
@@ -311,38 +372,37 @@
 
             modalcase.toggle();
 
-            fetch('https://apigo.afetharita.com/feeds/' + e )
-            .then((response) => response.json())
-            .then((data) => {  
+            fetch('https://apigo.afetharita.com/feeds/' + e)
+                .then((response) => response.json())
+                .then((data) => {
 
-                console.log(data);
-                console.log(c);
+                    console.log(data);
+                    console.log(c);
 
-                let caseCoordinate = `<p class="small">${c}</p>`;
-                let caseChannel = `<p class="small">${data.channel}</p>`;
-                let caseExtraParameters = `<p class="small">${data.extra_parameters}</p>`;
-                let caseFullText = `<p class="small">${data.full_text}</p>`;
-                let caseID = `<p class="small">${data.id}</p>`;
-                let casetimestamp = `<p class="small">${data.timestamp}</p>`;
+                    let caseCoordinate = `<p class="small">${c}</p>`;
+                    let caseChannel = `<p class="small">${data.channel}</p>`;
+                    let caseExtraParameters = `<p class="small">${data.extra_parameters}</p>`;
+                    let caseFullText = `<p class="small">${data.full_text}</p>`;
+                    let caseID = `<p class="small">${data.id}</p>`;
+                    let casetimestamp = `<p class="small">${data.timestamp}</p>`;
 
-                let getElementCoordinate = document.getElementById('caseCoordinate');
-                let getElementChannel = document.getElementById('caseChannel');
-                let getElementExtraParameters = document.getElementById('caseExtraParameters');
-                let getElementFullText = document.getElementById('caseFullText');
-                let getElementID = document.getElementById('caseID');
-                let getElementTimestamp = document.getElementById('caseTimestamp');
+                    let getElementCoordinate = document.getElementById('caseCoordinate');
+                    let getElementChannel = document.getElementById('caseChannel');
+                    let getElementExtraParameters = document.getElementById('caseExtraParameters');
+                    let getElementFullText = document.getElementById('caseFullText');
+                    let getElementID = document.getElementById('caseID');
+                    let getElementTimestamp = document.getElementById('caseTimestamp');
 
-                getElementCoordinate.innerHTML = caseCoordinate;
-                getElementChannel.innerHTML = caseChannel;
-                getElementExtraParameters.innerHTML = caseExtraParameters;
-                getElementFullText.innerHTML = caseFullText;
-                getElementID.innerHTML = caseID;
-                getElementTimestamp.innerHTML = casetimestamp;
+                    getElementCoordinate.innerHTML = caseCoordinate;
+                    getElementChannel.innerHTML = caseChannel;
+                    getElementExtraParameters.innerHTML = caseExtraParameters;
+                    getElementFullText.innerHTML = caseFullText;
+                    getElementID.innerHTML = caseID;
+                    getElementTimestamp.innerHTML = casetimestamp;
 
-            } );
+                });
 
         };
-
     </script>
 
 </body>
